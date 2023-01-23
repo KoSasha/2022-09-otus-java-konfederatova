@@ -1,5 +1,3 @@
-
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import ru.otus.Customer;
@@ -58,7 +56,6 @@ public class CustomerTest {
     }
 
     @Test
-    @Disabled //надо удалить
     @DisplayName("Сортировка по полю score, итерация по возрастанию")
     void scoreSortingTest() {
         //given
@@ -88,7 +85,7 @@ public class CustomerTest {
         //when
         Map.Entry<Customer, String> biggestScore = customerService.getNext(customer1);
         //then
-        assertThat(biggestScore.getKey()).isSameAs(customer3);
+        assertThat(biggestScore.getKey()).isEqualTo(customer3);
 
         //when
         Map.Entry<Customer, String> notExists = customerService.getNext(new Customer(100, "Not exists", 20000));
@@ -98,7 +95,6 @@ public class CustomerTest {
     }
 
     @Test
-    @Disabled //надо удалить
     @DisplayName("Модификация коллекции")
     void mutationTest() {
         //given
@@ -120,7 +116,6 @@ public class CustomerTest {
     }
 
     @Test
-    @Disabled //надо удалить
     @DisplayName("Возвращание в обратном порядке")
     void reverseOrderTest() {
         //given
