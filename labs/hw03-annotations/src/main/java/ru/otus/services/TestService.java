@@ -8,45 +8,66 @@ import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.Scanner;
+import java.util.concurrent.atomic.AtomicReference;
+import java.util.stream.Collectors;
 
 // класс-запускалка тестов
 public class TestService {
 
     private static final String REPORT_FILE = "report.txt";
     private static final String REPORT_FORMAT = "%s:\nSuccessful tests: %d\nUnsuccessful Tests: %d\nAll tests: %d";
+    private static int successfulTests;
+    private static int unSuccessfulTests;
 
     public static void startTests(Class clazz) throws IOException {
-        Object testClass = ReflectionHelper.instantiate(clazz);
         Method[] methods = clazz.getDeclaredMethods();
-        executeMethods(methods, testClass, Before.class);
-        executeMethods(methods, testClass, Test.class);
-        executeMethods(methods, testClass, After.class);
+        Map<String, List<Method>> map = Arrays.stream(methods).collect(Collectors.groupingBy(TestService::getAnnotation));
+
+        for (Method method: map.get(Test.class.getName())) {
+            Object testClass = ReflectionHelper.instantiate(clazz);
+            map.get(Before.class.getName()).forEach(m -> executeMethod(m, testClass, Before.class));
+            executeMethod(method, testClass, Test.class);
+            map.get(After.class.getName()).forEach(m -> executeMethod(m, testClass, After.class));
+        }
+        writeReportStatistic(clazz);
         printStatisticsReport(clazz);
     }
 
-    private static void executeMethods(Method[] methods, Object testClass, Class clazz) throws IOException {
-        int successfulTests = 0;
-        int unSuccessfulTests = 0;
-        for (Method method : methods) {
-            if (method.isAnnotationPresent(clazz)) {
-                try {
-                    ReflectionHelper.callMethod(testClass, method.getName());
-                    successfulTests++;
-                } catch (Exception e) {
-                    unSuccessfulTests++;
-                    System.out.println(e);
-                }
+    private static String getAnnotation(Method method) {
+        List<Class> testAnnotations = List.of(Test.class, Before.class, After.class);
+        String annotation = null;
+        for (Class ta : testAnnotations) {
+            Annotation a = method.getAnnotation(ta);
+            if (a != null) {
+                annotation = a.annotationType().getName();
             }
         }
-        if (clazz.equals(Test.class)) {
-            writeReportStatistic(testClass.getClass(), successfulTests, unSuccessfulTests);
+        return annotation;
+    }
+
+    private static void executeMethod(Method method, Object testClass, Class annotation) {
+        try {
+            ReflectionHelper.callMethod(testClass, method.getName());
+            if (annotation.equals(Test.class)) {
+                successfulTests++;
+            }
+        } catch (Exception e) {
+            if (annotation.equals(Test.class)) {
+                unSuccessfulTests++;
+                System.out.println(e);
+            }
         }
     }
 
-    private static void writeReportStatistic(Class clazz, int successfulTests, int unSuccessfulTests) throws IOException {
+    private static void writeReportStatistic(Class clazz) throws IOException {
         String reportPath = Objects.requireNonNull(clazz.getClassLoader().getResource(REPORT_FILE)).getPath();
         FileWriter fw = new FileWriter(reportPath);
         fw.write(String.format(REPORT_FORMAT, clazz.getName(), successfulTests, unSuccessfulTests, successfulTests + unSuccessfulTests));
