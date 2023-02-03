@@ -7,6 +7,26 @@ public class ReflectionHelper {
     private ReflectionHelper() {
     }
 
+    public static Object getFieldValue(Object object, String name) {
+        try {
+            var field = object.getClass().getDeclaredField(name);
+            field.setAccessible(true);
+            return field.get(object);
+        } catch (Exception ex) {
+            throw new RuntimeException(ex);
+        }
+    }
+
+    public static void setFieldValue(Object object, String name, Object value) {
+        try {
+            var field = object.getClass().getDeclaredField(name);
+            field.setAccessible(true);
+            field.set(object, value);
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
+
     public static Object callMethod(Object object, String name, Object... args) {
         try {
             var method = object.getClass().getDeclaredMethod(name, toClasses(args));
