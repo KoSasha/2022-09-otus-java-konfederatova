@@ -9,9 +9,6 @@ import java.util.Arrays;
 
 public class Ioc {
 
-    private Ioc() {
-    }
-
     public static TestLogging createTestLogging() {
         InvocationHandler handler = new DemoInvocationHandler(new TestLoggingImpl());
         return (TestLogging) Proxy.newProxyInstance(Ioc.class.getClassLoader(),
@@ -29,7 +26,7 @@ public class Ioc {
         public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
             Method methodImpl = testLogging.getClass().getDeclaredMethod(method.getName(), method.getParameterTypes());
             if (methodImpl.isAnnotationPresent(Log.class)) {
-                System.out.println("executed method: " + method + ", param: " + Arrays.toString(method.getParameters()));
+                System.out.println("executed method: " + method.getName() + ", param: " + Arrays.toString(args));
             }
             return method.invoke(testLogging, args);
         }

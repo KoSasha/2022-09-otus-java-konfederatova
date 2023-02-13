@@ -5,10 +5,6 @@ import ru.otus.annotations.Log;
 
 public class TestLoggingImpl implements TestLogging {
 
-    public TestLoggingImpl() {
-
-    }
-
     @Log
     @Override
     public void calculation(int param) {
