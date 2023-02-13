@@ -13,6 +13,7 @@ public class FactorialServiceTest {
     public void setUp() {
         System.out.println("Before test");
         appService = new FactorialService(VALUE);
+        throw new RuntimeException();
     }
 
     @Test

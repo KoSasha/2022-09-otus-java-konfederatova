@@ -34,9 +34,14 @@ public class TestService {
 
         for (Method method: map.get(Test.class.getName())) {
             Object testClass = ReflectionHelper.instantiate(clazz);
-            map.get(Before.class.getName()).forEach(m -> executeMethod(m, testClass, Before.class, testService));
-            executeMethod(method, testClass, Test.class, testService);
-            map.get(After.class.getName()).forEach(m -> executeMethod(m, testClass, After.class, testService));
+            try {
+                map.get(Before.class.getName()).forEach(m -> ReflectionHelper.callMethod(testClass, m.getName()));
+                executeTest(method, testClass, testService);
+            } catch (Exception e) {
+                System.out.println(e);
+            } finally {
+                map.get(After.class.getName()).forEach(m -> ReflectionHelper.callMethod(testClass, m.getName()));
+            }
         }
         writeReportStatistic(clazz, testService);
         printStatisticsReport(clazz);
@@ -54,17 +59,13 @@ public class TestService {
         return annotation;
     }
 
-    private static void executeMethod(Method method, Object testClass, Class annotation, TestService testService) {
+    private static void executeTest(Method method, Object testClass, TestService testService) {
         try {
             ReflectionHelper.callMethod(testClass, method.getName());
-            if (annotation.equals(Test.class)) {
-                ReflectionHelper.setFieldValue(testService, SUCCESSFUL_TESTS, getStatisticCountTests(testService, SUCCESSFUL_TESTS) + 1);
-            }
+            ReflectionHelper.setFieldValue(testService, SUCCESSFUL_TESTS, getStatisticCountTests(testService, SUCCESSFUL_TESTS) + 1);
         } catch (Exception e) {
-            if (annotation.equals(Test.class)) {
-                ReflectionHelper.setFieldValue(testService, UNSUCCESSFUL_TESTS, getStatisticCountTests(testService, UNSUCCESSFUL_TESTS) + 1);
-                System.out.println(e);
-            }
+            ReflectionHelper.setFieldValue(testService, UNSUCCESSFUL_TESTS, getStatisticCountTests(testService, UNSUCCESSFUL_TESTS) + 1);
+            System.out.println(e);
         }
     }
 
