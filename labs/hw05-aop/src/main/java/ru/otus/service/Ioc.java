@@ -18,13 +18,13 @@ public class Ioc {
     static class DemoInvocationHandler implements InvocationHandler {
         private final TestLogging testLogging;
 
-        DemoInvocationHandler(TestLogging testLogging) {
+        DemoInvocationHandler(TestLoggingImpl testLogging) {
             this.testLogging = testLogging;
         }
 
         @Override
         public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
-            Method methodImpl = testLogging.getClass().getDeclaredMethod(method.getName(), method.getParameterTypes());
+            Method methodImpl = TestLoggingImpl.class.getDeclaredMethod(method.getName(), method.getParameterTypes());
             if (methodImpl.isAnnotationPresent(Log.class)) {
                 System.out.println("executed method: " + method.getName() + ", param: " + Arrays.toString(args));
             }
