@@ -3,8 +3,6 @@ package ru.otus.atm.type;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 
-import java.util.Arrays;
-
 @Getter
 @AllArgsConstructor
 public enum Denomination {
